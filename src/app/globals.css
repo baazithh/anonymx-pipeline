@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-crimson: #ff2a2a;
+  --color-cyber-emerald: #00ff66;
+  --color-electric-cyan: #00f0ff;
+  --color-glass: rgba(255, 255, 255, 0.05);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  font-family: var(--font-mono);
+}
+
+.glass {
+  backdrop-filter: blur(12px);
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glow-crimson {
+  text-shadow: 0 0 10px rgba(255, 42, 42, 0.5);
+}
+
+.glow-emerald {
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+}
+
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2a;
+}
