@@ -3,8 +3,8 @@ import { MaskingEngine } from '@/lib/maskingEngine';
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = await req.json();
-    const result = MaskingEngine.processPayload(payload);
+    const { payload, config } = await req.json();
+    const result = MaskingEngine.processPayload(payload, config);
     
     // Artificial slight delay to simulate real-world processing
     await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
