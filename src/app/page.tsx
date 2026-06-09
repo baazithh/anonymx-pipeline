@@ -9,8 +9,9 @@ import { ComplianceVault } from '@/components/ComplianceVault';
 import { generateTransaction } from '@/lib/mockDataStream';
 
 export default function AnonymXDashboard() {
+  const [mounted, setMounted] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const [lastRaw, setLastRaw] = useState<any>(generateTransaction());
+  const [lastRaw, setLastRaw] = useState<any>(null);
   const [lastMasked, setLastMasked] = useState<any>(null);
   const [metrics, setMetrics] = useState({
     complianceScore: 100,
@@ -19,6 +20,11 @@ export default function AnonymXDashboard() {
     latency: 0,
     piiFound: [] as string[]
   });
+
+  useEffect(() => {
+    setMounted(true);
+    setLastRaw(generateTransaction());
+  }, []);
 
   const processNext = useCallback(async () => {
     const raw = generateTransaction();

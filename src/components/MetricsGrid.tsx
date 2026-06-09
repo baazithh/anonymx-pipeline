@@ -66,8 +66,12 @@ export const MetricsGrid: React.FC<Props> = ({ complianceScore, throughput, entr
               key={i}
               className="w-full bg-electric-cyan/30 rounded-t-sm"
               initial={{ height: "20%" }}
-              animate={{ height: `${20 + Math.random() * 80}%` }}
-              transition={{ repeat: Infinity, duration: 0.5 + Math.random(), repeatType: "reverse" }}
+              animate={{ height: `${20 + (i * 7) % 80}%` }} // Use deterministic values for initial layout
+              transition={{ 
+                repeat: Infinity, 
+                duration: 1 + (i * 0.1) % 2, 
+                repeatType: "reverse" 
+              }}
             />
           ))}
         </div>
