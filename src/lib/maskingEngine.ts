@@ -5,7 +5,9 @@ export interface MaskingConfig {
   maskEmails: boolean;
   maskPhones: boolean;
   maskAddresses: boolean;
-  maskFinancials: boolean;
+  maskCreditCard: boolean;
+  maskIBAN: boolean;
+  maskNationalIDs: boolean;
 }
 
 export const DEFAULT_CONFIG: MaskingConfig = {
@@ -13,7 +15,9 @@ export const DEFAULT_CONFIG: MaskingConfig = {
   maskEmails: true,
   maskPhones: true,
   maskAddresses: true,
-  maskFinancials: true,
+  maskCreditCard: true,
+  maskIBAN: true,
+  maskNationalIDs: true,
 };
 
 export interface MaskedData {
@@ -32,6 +36,8 @@ export class MaskingEngine {
   private static readonly EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
   private static readonly CC_REGEX = /\b(?:\d[ -]?){13,16}\b/g;
   private static readonly IBAN_REGEX = /[A-Z]{2}\d{2}[A-Z0-9]{11,30}/g;
+  private static readonly EMIRATES_ID_REGEX = /784-\d{4}-\d{7}-\d/g;
+  private static readonly SAUDI_ID_REGEX = /\b[12]\d{9}\b/g;
   
   static identifyPII(text: string): string[] {
     const found: string[] = [];
@@ -39,6 +45,7 @@ export class MaskingEngine {
     if (text.match(this.EMAIL_REGEX)) found.push('email');
     if (text.match(this.CC_REGEX)) found.push('credit_card');
     if (text.match(this.IBAN_REGEX)) found.push('iban');
+    if (text.match(this.EMIRATES_ID_REGEX) || text.match(this.SAUDI_ID_REGEX)) found.push('national_id');
     return found;
   }
 
@@ -60,13 +67,26 @@ export class MaskingEngine {
     return `X-AnonUser-${hash}`;
   }
 
-  static maskFinancial(val: string): string {
-    // Keep first 4 and last 4, mask middle
+  static maskCreditCard(val: string): string {
+    const clean = val.replace(/[ -]/g, '');
+    if (clean.length < 8) return "*******";
+    const start = clean.slice(0, 4);
+    const end = clean.slice(-4);
+    return `${start} XXXX XXXX ${end}`;
+  }
+
+  static maskIBAN(val: string): string {
     if (val.length < 10) return "*******";
-    const start = val.slice(0, 4);
-    const end = val.slice(-4);
-    const middle = val.slice(4, -4).replace(/[A-Z0-9]/g, 'X');
-    return `${start}${middle}${end}`;
+    const countryCode = val.slice(0, 2);
+    const lastFour = val.slice(-4);
+    return `${countryCode}** **** **** ${lastFour}`;
+  }
+
+  static maskNationalID(val: string): string {
+    if (val.match(this.EMIRATES_ID_REGEX)) {
+      return "784-XXXX-XXXXXXX-X";
+    }
+    return `X-ID-${crypto.createHash('sha256').update(val).digest('hex').slice(0, 6)}`;
   }
 
   static calculateEntropy(text: string): number {
@@ -97,23 +117,53 @@ export class MaskingEngine {
     const walk = (obj: any) => {
       for (const key in obj) {
         if (typeof obj[key] === 'string') {
-          const val = obj[key];
+          const val = obj[key] as string;
+          const lowerKey = key.toLowerCase();
           
-          if (config.maskNames && key.toLowerCase().includes('name')) {
-            obj[key] = this.maskName(val);
-            piiFound.push('name');
-          } else if (config.maskEmails && (key.toLowerCase().includes('email') || val.match(this.EMAIL_REGEX))) {
+          // 1. Identification / National IDs (Most specific)
+          if (config.maskNationalIDs && (lowerKey.match(/id|national|passport|emirates/) || val.match(this.EMIRATES_ID_REGEX) || val.match(this.SAUDI_ID_REGEX))) {
+            obj[key] = this.maskNationalID(val);
+            piiFound.push('national_id');
+            continue;
+          }
+
+          // 2. Financials (Specific patterns)
+          if (config.maskIBAN && (lowerKey.match(/iban|bank/) || val.match(this.IBAN_REGEX))) {
+            obj[key] = this.maskIBAN(val);
+            piiFound.push('iban');
+            continue;
+          }
+
+          if (config.maskCreditCard && (lowerKey.match(/cc|card/) || (val.replace(/[ -]/g, '').match(/^\d{13,16}$/) && val.match(this.CC_REGEX)))) {
+            obj[key] = this.maskCreditCard(val);
+            piiFound.push('credit_card');
+            continue;
+          }
+
+          // 3. Contact Info
+          if (config.maskEmails && (lowerKey.includes('email') || val.match(this.EMAIL_REGEX))) {
             obj[key] = this.maskEmail(val);
             piiFound.push('email');
-          } else if (config.maskPhones && (key.toLowerCase().includes('phone') || val.match(this.PHONE_REGEX))) {
+            continue;
+          }
+
+          if (config.maskPhones && (lowerKey.includes('phone') || val.match(this.PHONE_REGEX))) {
             obj[key] = this.maskPhone(val);
             piiFound.push('phone');
-          } else if (config.maskAddresses && key.toLowerCase().includes('address')) {
+            continue;
+          }
+
+          // 4. Names and Addresses (Generic key matching)
+          if (config.maskNames && lowerKey.includes('name')) {
+            obj[key] = this.maskName(val);
+            piiFound.push('name');
+            continue;
+          }
+
+          if (config.maskAddresses && lowerKey.includes('address')) {
             obj[key] = val.replace(/[0-9]/g, () => Math.floor(Math.random() * 10).toString());
             piiFound.push('address');
-          } else if (config.maskFinancials && (key.toLowerCase().match(/cc|card|iban|bank/) || val.match(this.CC_REGEX) || val.match(this.IBAN_REGEX))) {
-            obj[key] = this.maskFinancial(val);
-            piiFound.push('financial');
+            continue;
           }
         } else if (typeof obj[key] === 'object' && obj[key] !== null) {
           walk(obj[key]);

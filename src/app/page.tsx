@@ -52,14 +52,26 @@ export default function AnonymXDashboard() {
       }));
 
       // Add to audit logs
+      const piiTypes = data.metadata.piiFound;
+      const logType = piiTypes.length > 0 ? 'MASK_SUCCESS' : 'NO_PII_FOUND';
+      
+      let info = 'Clean payload verified';
+      if (piiTypes.length > 0) {
+        const hasIDs = piiTypes.includes('national_id');
+        const hasFinancials = piiTypes.includes('credit_card') || piiTypes.includes('iban');
+        
+        if (hasIDs && hasFinancials) info = `High-Risk Scrub: ${piiTypes.join(', ')}`;
+        else if (hasIDs) info = `Identity Protected: ${piiTypes.join(', ')}`;
+        else if (hasFinancials) info = `Financial Sanitization: ${piiTypes.join(', ')}`;
+        else info = `Scrubbed: ${piiTypes.join(', ')}`;
+      }
+
       const newLog = {
         id: Math.random().toString(36).substr(2, 9),
         timestamp: new Date().toISOString(),
         target: raw.target_db || 'Iceberg:default',
-        type: data.metadata.piiFound.length > 0 ? 'MASK_SUCCESS' : 'NO_PII_FOUND',
-        info: data.metadata.piiFound.length > 0 
-          ? `Sanitized: ${data.metadata.piiFound.join(', ')}`
-          : 'Clean payload verified',
+        type: logType,
+        info: info,
         status: 'Verified'
       };
 

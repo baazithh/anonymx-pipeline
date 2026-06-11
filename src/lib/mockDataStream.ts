@@ -14,13 +14,25 @@ export const DB_TARGETS = [
   "Snowflake:marketing_prod", "Delta:risk_analysis"
 ];
 
+const randomDigits = (n: number) => Array.from({length: n}, () => Math.floor(Math.random() * 10)).join('');
+
+export const generateIBAN = (country: 'SA' | 'AE') => {
+  if (country === 'SA') return `SA${randomDigits(2)}${randomDigits(20)}`;
+  return `AE${randomDigits(2)}000000${randomDigits(13)}`;
+};
+
+export const generateNationalID = (country: 'SA' | 'AE') => {
+  if (country === 'SA') return `${Math.random() > 0.5 ? '1' : '2'}${randomDigits(9)}`;
+  return `784-${randomDigits(4)}-${randomDigits(7)}-${randomDigits(1)}`;
+};
+
 export const generateTransaction = () => {
   const name = GCC_NAMES[Math.floor(Math.random() * GCC_NAMES.length)];
   const city = CITIES[Math.floor(Math.random() * CITIES.length)];
   const isKSA = city.includes("KSA") || city.includes("Saudi");
+  const countryCode = isKSA ? 'SA' : 'AE';
   const phonePrefix = isKSA ? "+966" : "+971";
   
-  const randomDigits = (n: number) => Array.from({length: n}, () => Math.floor(Math.random() * 10)).join('');
   const email = `${name.toLowerCase().replace(/ /g, '.')}@example.${isKSA ? 'sa' : 'ae'}`;
 
   return {
@@ -35,6 +47,8 @@ export const generateTransaction = () => {
       phone: `${phonePrefix} 5${Math.floor(Math.random() * 9)} ${randomDigits(7)}`,
       address: `${Math.floor(Math.random() * 900) + 100} Al-Wasl Road, ${city}`,
       credit_card: `4${randomDigits(3)} ${randomDigits(4)} ${randomDigits(4)} ${randomDigits(4)}`,
+      iban: generateIBAN(countryCode),
+      national_id: generateNationalID(countryCode)
     },
     items: [
       { id: "p-101", name: "Premium BNPL Installment", price: 250.00 },

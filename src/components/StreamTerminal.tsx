@@ -30,7 +30,7 @@ export const StreamTerminal: React.FC<Props> = ({ rawJson, maskedJson, latency, 
   const highlightPII = (json: any) => {
     const str = JSON.stringify(json, null, 2);
     return str.split('\n').map((line, i) => {
-      const isPII = line.toLowerCase().match(/name|email|phone|address|cc|card|iban|bank/);
+      const isPII = line.toLowerCase().match(/name|email|phone|address|cc|card|iban|bank|id|national|emirates/);
       
       return (
         <div key={i} className={`whitespace-pre-wrap px-2 ${isPII ? "text-crimson/90 font-bold bg-crimson/5 border-l-2 border-crimson" : "text-white/70"}`}>
@@ -46,6 +46,8 @@ export const StreamTerminal: React.FC<Props> = ({ rawJson, maskedJson, latency, 
       const isMasked = line.includes('X-AnonUser') || 
                        line.includes('@anon-') ||
                        line.includes('XXXX') ||
+                       line.includes('X-ID-') ||
+                       line.includes('784-XXXX') ||
                        (line.match(/\d/) && (line.toLowerCase().includes('phone') || line.toLowerCase().includes('address')));
 
       return (
