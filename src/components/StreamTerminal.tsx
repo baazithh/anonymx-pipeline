@@ -101,7 +101,7 @@ export const StreamTerminal: React.FC<Props> = ({ rawJson, maskedJson, latency, 
       </div>
 
       {/* Terminals Grid */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10 rounded-xl overflow-hidden glass border border-white/5">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-px bg-white/10 rounded-xl overflow-hidden glass border border-white/5 cyber-card">
         <div className="flex flex-col h-full overflow-hidden border-r border-white/10">
           <div className="bg-black/40 px-4 py-2 border-b border-white/10 flex justify-between items-center">
             <div className="flex items-center gap-2">

@@ -6,6 +6,7 @@ import { Shield, Play, Pause, RefreshCw, Layers, Trash2 } from 'lucide-react';
 import { MetricsGrid } from '@/components/MetricsGrid';
 import { StreamTerminal } from '@/components/StreamTerminal';
 import { ComplianceVault } from '@/components/ComplianceVault';
+import { RiskGauge } from '@/components/RiskGauge';
 import { generateTransaction } from '@/lib/mockDataStream';
 import { DEFAULT_CONFIG, MaskingConfig } from '@/lib/maskingEngine';
 
@@ -22,6 +23,7 @@ export default function AnonymXDashboard() {
     throughput: 0,
     entropyReduction: 0,
     latency: 0,
+    riskScore: 100,
     piiFound: [] as string[]
   });
 
@@ -44,10 +46,11 @@ export default function AnonymXDashboard() {
 
       setLastMasked(data.masked);
       setMetrics(prev => ({
-        complianceScore: 90 + Math.random() * 10,
+        complianceScore: data.metadata.riskScore > 80 ? 100 : data.metadata.riskScore + 10,
         throughput: 12 + Math.random() * 5,
         entropyReduction: data.metadata.entropyReduction,
         latency: data.metadata.latencies,
+        riskScore: data.metadata.riskScore,
         piiFound: data.metadata.piiFound
       }));
 
@@ -158,12 +161,19 @@ export default function AnonymXDashboard() {
           </div>
         </div>
 
-        {/* Metrics Grid */}
-        <MetricsGrid 
-          complianceScore={metrics.complianceScore}
-          throughput={isActive ? metrics.throughput : 0}
-          entropyReduction={metrics.entropyReduction}
-        />
+        {/* Metrics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            <MetricsGrid 
+              complianceScore={metrics.complianceScore}
+              throughput={isActive ? metrics.throughput : 0}
+              entropyReduction={metrics.entropyReduction}
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <RiskGauge score={metrics.riskScore} />
+          </div>
+        </div>
 
         {/* Live Stream Section */}
         <div className="space-y-6">

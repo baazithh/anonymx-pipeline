@@ -16,7 +16,7 @@ export const MetricsGrid: React.FC<Props> = ({ complianceScore, throughput, entr
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
       <motion.div 
-        className="glass p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden group"
+        className="glass p-6 rounded-xl flex flex-col gap-2 relative overflow-hidden group cyber-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -44,7 +44,7 @@ export const MetricsGrid: React.FC<Props> = ({ complianceScore, throughput, entr
       </motion.div>
 
       <motion.div 
-        className="glass p-6 rounded-xl flex flex-col gap-2"
+        className="glass p-6 rounded-xl flex flex-col gap-2 cyber-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
@@ -78,7 +78,7 @@ export const MetricsGrid: React.FC<Props> = ({ complianceScore, throughput, entr
       </motion.div>
 
       <motion.div 
-        className="glass p-6 rounded-xl flex flex-col gap-2"
+        className="glass p-6 rounded-xl flex flex-col gap-2 cyber-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
